@@ -1,1 +1,1 @@
-# rss2channel
+# rss2telegram
