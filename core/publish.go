@@ -12,18 +12,35 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Message struct {
+	Title string
+	Link  string
+}
+
 func (app *App) Publish() (err error) {
 	t := time.Now()
 	fp := gofeed.NewParser()
 	feed, _ := fp.ParseURL(app.FeedURL)
+	ms := make([]*Message, 0)
 
 	fmt.Println(feed)
 
+	//下面是一段很蠢的代码
 	for i := 0; feed.Items[i].PublishedParsed.After(app.LastPublished); i++ {
-		title := html.UnescapeString(feed.Items[i].Title)
-		link := feed.Items[i].Link
-		err = app.SendMessage(title, link)
+		ms = append(ms, &Message{
+			Title: html.UnescapeString(feed.Items[i].Title),
+			Link:  feed.Items[i].Link,
+		})
+
+		if i+1 >= len(feed.Items) {
+			break
+		}
+	}
+
+	for i := len(ms) - 1; i >= 0; i-- {
+		err = app.SendMessage(ms[i])
 		if err != nil {
+			log.Printf(err.Error())
 			return
 		}
 	}
@@ -32,8 +49,8 @@ func (app *App) Publish() (err error) {
 	return
 }
 
-func (app *App) SendMessage(title, link string) (err error) {
-	text := fmt.Sprintf("[%s](%s)", title, link)
+func (app *App) SendMessage(m *Message) (err error) {
+	text := fmt.Sprintf("[%s](%s)", m.Title, m.Link)
 	log.Println(text)
 
 	resp, err := http.PostForm(fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", app.BotToken), map[string][]string{
