@@ -20,10 +20,12 @@ type Message struct {
 func (app *App) Publish() (err error) {
 	t := time.Now()
 	fp := gofeed.NewParser()
-	feed, _ := fp.ParseURL(app.FeedURL)
-	ms := make([]*Message, 0)
+	feed, err := fp.ParseURL(app.FeedURL)
+	if err != nil {
+		return
+	}
 
-	fmt.Println(feed)
+	ms := make([]*Message, 0)
 
 	//下面是一段很蠢的代码
 	for i := 0; feed.Items[i].PublishedParsed.After(app.LastPublished); i++ {
