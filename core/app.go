@@ -11,6 +11,7 @@ type App struct {
 	BotToken       string
 	ChatID         string
 	FeedURL        string
+	UA             string
 	Interval       time.Duration `json:"-"`
 	IntervalSecond int           `json:"Interval"`
 

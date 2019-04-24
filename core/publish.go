@@ -19,8 +19,21 @@ type Message struct {
 
 func (app *App) Publish() (err error) {
 	t := time.Now()
+
+	req, err := http.NewRequest("GET", app.FeedURL, nil)
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("User-Agent", app.UA)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return
+	}
+
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(app.FeedURL)
+	feed, err := fp.Parse(resp.Body)
 	if err != nil {
 		return
 	}
